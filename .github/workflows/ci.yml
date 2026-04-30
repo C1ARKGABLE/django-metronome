@@ -18,15 +18,18 @@ jobs:
       # v5+ / v6+ use Node 24 runtime (avoids Node 20 deprecation on GHA runners).
       - uses: actions/checkout@v5
 
+      # `setup-python` with `cache: poetry` invokes `poetry` during that step — install it first.
+      - name: Install Poetry
+        run: |
+          python3 -m pip install --user poetry
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           # Restores Poetry venv + wheel cache from poetry.lock (see setup-python README).
           cache: poetry
           cache-dependency-path: poetry.lock
-
-      - name: Install Poetry
-        run: pip install poetry
 
       - name: Cache pre-commit environments
         uses: actions/cache@v5
