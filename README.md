@@ -4,6 +4,8 @@
 
 > **Status:** Early design / pre-1.0. APIs and scope will change.
 
+For **repository layout, commands, and agent-oriented conventions**, see [AGENTS.md](AGENTS.md).
+
 ## Why this exists
 
 Metronome publishes an official Python SDK ([`metronome-sdk` on PyPI](https://pypi.org/project/metronome-sdk/)) and documents it under [Build with the Metronome SDKs](https://docs.metronome.com/developer-resources/sdks). That SDK is the right place for typed API calls, retries, and pagination.
@@ -26,12 +28,11 @@ Metronome’s product surface (contracts, usage, invoices, credits, etc.) is doc
 - **Payment collection** (cards, bank debits, SCA) — typically handled by a payments provider; Metronome focuses on metering, pricing, contracts, and invoicing. This package will document that boundary clearly.
 - **Re-implementing the Metronome HTTP API** — use the official SDK for all API traffic.
 
-## Requirements (target)
+## Requirements
 
-- Django (version range TBD)
-- Python (version range TBD)
-- PostgreSQL recommended for production (TBD)
-- Dependency on **`metronome-sdk`** for API access
+- **Python** 3.12 or 3.13 (see `pyproject.toml`; 3.14+ when Django supports it)
+- **Django** 5.2.x (pinned range in Poetry)
+- **`metronome-sdk`** — planned dependency for API calls (not required for the current hello-world scaffold)
 
 ## Installation
 
@@ -41,7 +42,62 @@ Not published yet. When ready:
 pip install django-metronome
 ```
 
-Until then, install from git / a local checkout (instructions TBD).
+Until then, use a git checkout with [Poetry](https://python-poetry.org/docs/#installation) (see Development below).
+
+## Development
+
+The reusable app and the smoke **example** project were created with Django’s built-in commands ([`django-admin` / `manage.py`](https://docs.djangoproject.com/en/stable/ref/django-admin/)), following the spirit of [How to write reusable apps](https://docs.djangoproject.com/en/stable/intro/reusable-apps/).
+
+From the repository root:
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+pip install poetry
+poetry install
+```
+
+Scaffolding commands (already reflected in the tree; re-run only if you recreate from scratch):
+
+```bash
+mkdir -p src/django_metronome
+poetry run django-admin startapp django_metronome src/django_metronome
+mkdir -p example
+poetry run django-admin startproject example_site example
+```
+
+Apply migrations and run the example site (serves **Hello, world** at `/`):
+
+```bash
+poetry run python example/manage.py migrate
+poetry run python example/manage.py runserver
+```
+
+Run tests and lint (or use `make test`, `make lint`, `make fmt`, `make check`):
+
+```bash
+poetry run pytest
+poetry run ruff check src tests example
+poetry run ruff format src tests example
+```
+
+The **installable package** is `src/django_metronome/`. The **`example/`** directory is dev-only and is not the published library surface.
+
+### Git hooks (format + lint before commit/push)
+
+After `poetry install`, register hooks once per clone:
+
+```bash
+make install-hooks
+```
+
+That installs [pre-commit](https://pre-commit.com/) for **commit** and **push** (Ruff format, Ruff check with auto-fix, trailing whitespace, EOF, YAML, large files). To run the same checks manually:
+
+```bash
+make pre-commit
+```
+
+CI runs the same `pre-commit` suite plus `pytest` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Documentation
 
