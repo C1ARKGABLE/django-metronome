@@ -10,6 +10,8 @@ packages = [{ include = "django_metronome", from = "src" }]
 [tool.poetry.dependencies]
 python = ">=3.12,<3.14"
 django = ">=5.2,<6"
+metronome-sdk = "^4.5.0"
+pydantic = "^2.13.3"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.0"

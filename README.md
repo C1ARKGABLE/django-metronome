@@ -32,7 +32,7 @@ Metronome’s product surface (contracts, usage, invoices, credits, etc.) is doc
 
 - **Python** 3.12 or 3.13 (see `pyproject.toml`; 3.14+ when Django supports it)
 - **Django** 5.2.x (pinned range in Poetry)
-- **`metronome-sdk`** — planned dependency for API calls (not required for the current hello-world scaffold)
+- **`metronome-sdk`** — used by the integration adapter for API calls
 
 ## Installation
 
@@ -82,6 +82,34 @@ poetry run ruff format src tests example
 ```
 
 The **installable package** is `src/django_metronome/`. The **`example/`** directory is dev-only and is not the published library surface.
+
+## Metronome configuration
+
+Phase 0 introduces an explicit settings contract in `django_metronome.conf`.
+The app boots without credentials by default; SDK calls only activate when an
+API key is configured.
+
+Supported settings (Django settings values or environment variables):
+
+- `METRONOME_API_KEY` (optional, enables API calls when present)
+- `METRONOME_WEBHOOK_SECRET` (optional, for webhook signature verification)
+- `METRONOME_ENV` (`sandbox`, `production`, or `local`; default `sandbox`)
+- `METRONOME_TIMEOUT_MS` (default `10000`)
+- `METRONOME_MAX_RETRIES` (default `2`)
+- `METRONOME_STRICT_SCHEMA_MODE` (default `false`)
+- `METRONOME_USE_LIVE_QUERIES` (default `false`)
+
+Example `example/example_site/settings.py` override:
+
+```python
+METRONOME_API_KEY = os.getenv("METRONOME_API_KEY")
+METRONOME_WEBHOOK_SECRET = os.getenv("METRONOME_WEBHOOK_SECRET")
+METRONOME_ENV = os.getenv("METRONOME_ENV", "sandbox")
+METRONOME_TIMEOUT_MS = int(os.getenv("METRONOME_TIMEOUT_MS", "10000"))
+METRONOME_MAX_RETRIES = int(os.getenv("METRONOME_MAX_RETRIES", "2"))
+METRONOME_STRICT_SCHEMA_MODE = os.getenv("METRONOME_STRICT_SCHEMA_MODE", "false")
+METRONOME_USE_LIVE_QUERIES = os.getenv("METRONOME_USE_LIVE_QUERIES", "false")
+```
 
 ### Git hooks (format + lint before commit/push)
 

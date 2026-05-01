@@ -1,4 +1,4 @@
-.PHONY: test lint fmt check migrate runserver install-hooks pre-commit
+.PHONY: test lint fmt check migrate runserver install-hooks pre-commit run
 
 test:
 	poetry run pytest
@@ -25,3 +25,5 @@ migrate:
 
 runserver:
 	poetry run python example/manage.py runserver
+
+run: migrate runserver
