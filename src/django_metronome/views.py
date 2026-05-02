@@ -3,7 +3,7 @@ from django.views.decorators.http import require_http_methods
 
 from django_metronome.client import MetronomeClientDisabledError
 from django_metronome.conf import get_metronome_settings
-from django_metronome.services import MetronomeAdapter
+from django_metronome.services import MetronomeAdapter, upsert_customer
 
 
 def hello(request):
@@ -22,6 +22,7 @@ def sync_customer(request: HttpRequest, customer_id: str) -> JsonResponse:
     try:
         adapter = MetronomeAdapter()
         payload = adapter.retrieve_customer(customer_id)
+        row = upsert_customer(payload, environment=settings.environment)
     except MetronomeClientDisabledError:
         return JsonResponse(
             {"detail": "Metronome client is not configured."}, status=503
@@ -30,7 +31,7 @@ def sync_customer(request: HttpRequest, customer_id: str) -> JsonResponse:
     return JsonResponse(
         {
             "status": "ok",
-            "customer_id": payload.get("id"),
+            "customer_id": row.metronome_id,
             "environment": settings.environment,
             "payload": payload,
         }

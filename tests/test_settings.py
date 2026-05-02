@@ -23,6 +23,8 @@ def test_metronome_settings_defaults(settings):
 
 
 def test_metronome_settings_env_overrides(settings, monkeypatch):
+    monkeypatch.delattr(settings, "METRONOME_API_KEY", raising=False)
+    monkeypatch.delattr(settings, "METRONOME_WEBHOOK_SECRET", raising=False)
     settings.METRONOME_TIMEOUT_MS = 100
     settings.METRONOME_MAX_RETRIES = 1
 

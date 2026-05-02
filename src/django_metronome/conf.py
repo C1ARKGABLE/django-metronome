@@ -26,18 +26,30 @@ class MetronomeSettings:
 
     @property
     def base_url(self) -> str:
-        if self.environment == "production":
+        if self.environment in {"production", "sandbox"}:
             return "https://api.metronome.com"
-        if self.environment == "sandbox":
-            return "https://sandbox.api.metronome.com"
         return "http://localhost:4010"
 
 
 def _read_setting(name: str, default: object) -> object:
     env_value = os.getenv(name)
+    django_has = hasattr(settings, name)
+    django_value = getattr(settings, name, default) if django_has else default
+
+    # Explicit ``None`` / empty on Django settings disables credentials even if the
+    # shell still exports ``METRONOME_*`` (e.g. pytest + local dev env).
+    if (
+        django_has
+        and django_value in (None, "")
+        and name in ("METRONOME_API_KEY", "METRONOME_WEBHOOK_SECRET")
+    ):
+        return None
+
     if env_value is not None:
         return env_value
-    return getattr(settings, name, default)
+    if django_has:
+        return django_value
+    return default
 
 
 def _as_int(value: object, *, default: int) -> int:

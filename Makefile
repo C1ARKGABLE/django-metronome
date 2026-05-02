@@ -21,6 +21,7 @@ pre-commit:
 	poetry run pre-commit run --all-files
 
 migrate:
+	poetry run python example/manage.py makemigrations
 	poetry run python example/manage.py migrate
 
 runserver:
